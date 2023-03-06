@@ -2,6 +2,7 @@ const HTTP = require('http');
 const URL = require('url').URL;
 const PORT = 3000;
 
+// Application server
 const getParams = (path) => {
   const url = new URL(path, `http://localhost:${PORT}`);
   return url.searchParams;
@@ -27,6 +28,7 @@ const generateCalculator = (params) => {
   );
 };
 
+// HTTP server
 const SERVER = HTTP.createServer((req, res) => {
   const path = req.url;
 
@@ -35,7 +37,7 @@ const SERVER = HTTP.createServer((req, res) => {
     res.end();
   } else {
     let calculator = generateCalculator(getParams(path));
-    res.write(calculator);
+    res.write(`${calculator}\n`); // HTTP/1.1 bodies end with new line
     res.statusCode = 200;
     res.end();
   }
