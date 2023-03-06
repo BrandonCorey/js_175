@@ -14,19 +14,71 @@ const getPayment = (amount, APR, years) => {
   return amount * (interest / (1 - Math.pow((1 + interest), (-months))));
 };
 
-const generateCalculator = (params) => {
+const generateContent = (params) => {
   const amount = params.get('amount');
   const duration = params.get('duration');
   const APR = 5;
-  const monthlyPayment = getPayment(amount, APR, duration);
+  const payment = getPayment(amount, APR, duration).toFixed(2);
 
-  return (
-    `Amount: ${amount}\n` +
-    `Duration: ${duration} years\n` +
-    `APR: ${APR}%\n` +
-    `Monthly payment: ${monthlyPayment.toFixed(2)}`
-  );
-};
+  let content = `<tr><th>Amount:</th><td>$${amount}</td></tr>
+                 <tr><th>Duration:</th><td>${duration} years</td></tr>
+                 <tr><th>APR:</th><td>${APR}%</td></tr>
+                 <tr><th>Monthly payment:</th><td>$${payment}</td></tr>`;
+  
+  return content;
+}
+
+const generateHTML = (dynamicContent) => {
+  const HTML_START = `
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>Loan Calculator</title>
+      <style type="text/css">
+        body {
+          background: rgba(250, 250, 250);
+          font-family: sans-serif;
+          color: rgb(50, 50, 50);
+        }
+  
+        article {
+          width: 100%;
+          max-width: 40rem;
+          margin: 0 auto;
+          padding: 1rem 2rem;
+        }
+  
+        h1 {
+          font-size: 2.5rem;
+          text-align: center;
+        }
+  
+        table {
+          font-size: 2rem;
+        }
+  
+        th {
+          text-align: right;
+        }
+      </style>
+    </head>
+    <body>
+      <article>
+        <h1>Loan Calculator</h1>
+        <table>
+          <tbody>
+  `;
+
+  const HTML_END = `
+          </tbody>
+        </table>
+      </article>
+    </body>
+  </html>`;
+
+  return HTML_START + dynamicContent + HTML_END;
+}
 
 // HTTP server
 const SERVER = HTTP.createServer((req, res) => {
@@ -36,8 +88,9 @@ const SERVER = HTTP.createServer((req, res) => {
     res.statusCode = 404;
     res.end();
   } else {
-    let calculator = generateCalculator(getParams(path));
-    res.write(`${calculator}\n`); // HTTP/1.1 bodies end with new line
+    let content = generateContent(getParams(path));
+    let HTML = generateHTML(content)
+    res.write(`${HTML}`); // HTTP/1.1 bodies end with new line
     res.statusCode = 200;
     res.end();
   }
